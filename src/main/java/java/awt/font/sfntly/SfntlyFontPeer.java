@@ -25,17 +25,13 @@ public class SfntlyFontPeer extends FontPeerImpl {
     private int yMin;
     private int yMax;
 
-    public SfntlyFontPeer(String name, int style, int size) {
+    public SfntlyFontPeer(InputStream in, String name, int style, int size) {
         this.name = name;
         this.style = style;
         this.size = size;
 
         try {
-            InputStream ttfInput = ClassLoader.getSystemClassLoader().getResourceAsStream(name + ".ttf");
-            if (ttfInput == null) {
-                throw new RuntimeException("Couldn't open the font file: " + name + ".ttf");
-            }
-            font = FontFactory.getInstance().loadFonts(ttfInput)[0];
+            font = FontFactory.getInstance().loadFonts(in)[0];
         } catch (IOException e) {
             throw new RuntimeException("Could not load font: " + name, e);
         }

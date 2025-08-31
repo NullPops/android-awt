@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "io.github.nullpops"
-version = "1.0.0"
+version = "1.0.1"
 
 repositories {
     mavenCentral()
@@ -64,6 +64,7 @@ tasks.register<Jar>("javadocJar") {
 }
 
 dependencies {
+    compileOnly(files("./lib/android-35.jar"))
     with(libs) {
         implementation(sfntly)
         implementation(androidx.core.ktx)
@@ -126,13 +127,14 @@ publishing {
 
 // Ensure the staged repo exists before JReleaser deploys
 tasks.withType<JReleaserDeployTask>().configureEach {
+    outputs.upToDateWhen { false }
     dependsOn("publishReleasePublicationToStagingRepository")
 }
 
 jreleaser {
     project {
         name.set("android-awt")
-        version.set(project.version.toString())
+        version.set(project.version.get())
         description.set("Android library that spoofs java.awt APIs for compatibility")
         links { homepage.set("https://github.com/NullPops/android-awt") }
     }
@@ -156,6 +158,10 @@ jreleaser {
                 create("central") {
                     active.set(Active.ALWAYS)
                     url.set("https://central.sonatype.com/api/v1/publisher")
+                    applyMavenCentralRules.set(false)
+                    verifyPom.set(false)
+                    sign.set(true)
+                    checksums.set(true)
                     stagingRepository(layout.buildDirectory.dir("staging-deploy").get().asFile.absolutePath)
                     applyMavenCentralRules.set(true)
                 }

@@ -19,6 +19,7 @@
  */
 package org.apache.harmony.awt.gl.font;
 
+import android.content.Context;
 import org.apache.harmony.awt.Utils;
 
 import java.awt.*;
@@ -27,8 +28,10 @@ import java.awt.peer.FontPeer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
+import java.nio.ByteBuffer;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Properties;
@@ -520,7 +523,7 @@ public class FontManager {
      * @param size  font size
      */
     public FontPeer createPhysicalFontPeer(String name, int style, int size) {
-        return new SfntlyFontPeer(name, style, size);
+        return new SfntlyFontPeer(null, name, style, size);
     }
 
     /**
@@ -544,7 +547,7 @@ public class FontManager {
         }
 
         if (peer == null) {
-            peer = createDefaultFont(style, size);
+            peer = defaultFont;
 
             ((FontPeerImpl) peer).setFamily(DEFAULT_NAME);
             ((FontPeerImpl) peer).setPSName(DEFAULT_NAME);
@@ -556,15 +559,14 @@ public class FontManager {
         return peer;
     }
 
-    /**
-     * Returns new default font peer with "Default" name for the parameters
-     * specified. This method must be overridden by subclasses implementations.
-     *
-     * @param style style of the font
-     * @param size  size of the font
-     */
-    public FontPeer createDefaultFont(int style, int size) {
-        return new SfntlyFontPeer("/meteor/game/runescape", style, size);
+    public static FontPeer defaultFont;
+
+    public static void createDefaultFont(Context context, String path, String name, int style, int size) {
+        try(InputStream in = context.getAssets().open(path)) {
+            defaultFont = new SfntlyFontPeer(in, name, style, size);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
